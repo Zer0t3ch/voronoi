@@ -1,5 +1,6 @@
 from Tkinter import *
 import random
+import math
 import sys
 import os
 
@@ -12,6 +13,15 @@ class Point:
 	loc = [0, 0]
 	x = 0
 	y = 0
+
+	def angle_to(self, target):
+		rad = math.atan(
+			target.y - self.y,
+			target.x - self.x
+		)
+		deg = math.degrees(rad)
+		while deg < 0:
+			deg += 360
 
 
 class Line:
