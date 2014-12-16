@@ -7,7 +7,11 @@ import os
 class Point:
 	def __init__(self, x=0, y=0):
 		self.loc = [x, y]
+		self.x = x
+		self.y = y
 	loc = [0, 0]
+	x = 0
+	y = 0
 
 
 class Line:
@@ -22,12 +26,7 @@ class Line:
 		return self.p1.loc, self.p2.loc
 
 	def get_raw(self):
-		return [
-			self.p1.loc[0],
-			self.p1.loc[1],
-			self.p2.loc[0],
-			self.p2.loc[1]
-		]
+		return self.p1.loc[0], self.p1.loc[1], self.p2.loc[0], self.p2.loc[1]
 
 
 class Application(Frame):
@@ -120,8 +119,10 @@ class Application(Frame):
 			self.clear_lines(cat='c')
 			self.toggle_mode('c')
 		else:
-			# Calculate lines
-			# Add lines to array and draw
+			for l in convex_lines(self.points):
+				a, b, x, y = l.get_raw()
+				tline = self.c.create_line(a, b, x, y)
+				self.add_line(tline, cat='c')
 
 	def create_buttons(self, parent):
 		quit = self.buttons['quit'] = Button(
@@ -159,6 +160,12 @@ class Application(Frame):
 		self.pack()
 		self.create_frames()
 		self.create_buttons(self.frames[1])
+
+
+def convex_lines(points):
+	lines = []
+	pleft = points
+	return lines
 
 
 window = Tk()
