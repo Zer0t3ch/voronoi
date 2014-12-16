@@ -16,8 +16,7 @@ class Point:
 
 	def angle_to(self, target):
 		rad = math.atan(
-			target.y - self.y,
-			target.x - self.x
+			(target.y - self.y) / (target.x - self.x)
 		)
 		deg = math.degrees(rad)
 		while deg < 0:
