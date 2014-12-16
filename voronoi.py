@@ -1,3 +1,4 @@
+from operator import attrgetter
 from Tkinter import *
 import random
 import math
@@ -7,20 +8,22 @@ import os
 
 class Point:
 	def __init__(self, x=0, y=0):
-		self.loc = [x, y]
+		self.loc = (x, y)
 		self.x = x
 		self.y = y
-	loc = [0, 0]
 	x = 0
 	y = 0
 
 	def angle_to(self, target):
+		if self.x == target.x:
+			return 361
 		rad = math.atan(
 			(target.y - self.y) / (target.x - self.x)
 		)
 		deg = math.degrees(rad)
-		while deg < 0:
+		if deg < 0:
 			deg += 360
+		return deg
 
 
 class Line:
@@ -118,18 +121,25 @@ class Application(Frame):
 			lines[cat].append(line)
 
 	def toggle_mode(self, mode):
+		print mode, ': ', self.toggles[mode]
 		if self.toggles[mode]:
 			self.toggles[mode] = False
 		else:
 			self.toggles[mode] = True
 
 	def toggle_convex_hull(self):
+		print(self.toggles['c'])
+		self.toggle_mode('c')
 		if self.toggles['c']:
 			self.clear_lines(cat='c')
-			self.toggle_mode('c')
 		else:
 			for l in convex_lines(self.points):
+				print '[ {0}, {1}, {2}, {3} ]'.format(a, b, x, y)
 				a, b, x, y = l.get_raw()
+				a *= 9
+				b *= 9
+				x *= 9
+				y *= 9
 				tline = self.c.create_line(a, b, x, y)
 				self.add_line(tline, cat='c')
 
@@ -171,9 +181,29 @@ class Application(Frame):
 		self.create_buttons(self.frames[1])
 
 
-def convex_lines(points):
+def convex_lines(point_array):
+	points = point_array
 	lines = []
-	pleft = points
+	pts = [Point()]
+	lowest = min(points, key=attrgetter('x'))		# Find the bottom-most point
+	pts.append(lowest)								# Add the lowest to the hull
+	points.pop(points.index(lowest))			# Remove first point from to-be-processed
+	while pts[0] is not pts[-1]:
+		angles = []
+		pts.pop(0)
+		for p in points:
+			angles.append(pts[0].angle_to(p))
+		print angles
+		i = angles.index(min(angles))
+		pts.append(points.pop(i))
+	for x in xrange(len(pts)):
+		if x != 0:
+			lines.append(Line(
+				pts[x].x,
+				pts[x].y,
+				pts[x-1].x,
+				pts[x-1].y
+			))
 	return lines
 
 
@@ -181,5 +211,6 @@ window = Tk()
 app = Application(window)
 app.generate_points()
 app.draw_points()
+print convex_lines(app.points)
 app.mainloop()
 window.destroy()
