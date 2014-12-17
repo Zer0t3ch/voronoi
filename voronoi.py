@@ -1,6 +1,8 @@
+#!/usr/bin/python
 from operator import attrgetter
 from Tkinter import *
 import random
+import time
 import math
 import sys
 import os
@@ -25,6 +27,12 @@ class Point:
 			deg += 360
 		return deg
 
+	def same_as(self, target):
+		if self.x == target.x:
+			if self.y == target.y:
+				return True
+		return False
+
 
 class Line:
 	def __init__(self, x1, y1, x2, y2):
@@ -42,12 +50,12 @@ class Line:
 
 
 class Application(Frame):
-	size = [1200, 900]
-	csize = [900, 900]
-	cscale = 9
+	f_size = [1200, 900]
+	c_size = [900, 900]
+	c_scale = 9
 	frames = ['', '']
 	buttons = {}
-	point_count = 50
+	point_count = 15
 	points = []
 	lines = {
 		'a': [],
@@ -63,8 +71,8 @@ class Application(Frame):
 
 	def loc(self, p):
 		x, y = p.loc
-		a = x * self.cscale
-		b = y * self.cscale
+		a = x * self.c_scale
+		b = y * self.c_scale
 		return a, b
 
 	def create_frames(self):
@@ -88,8 +96,8 @@ class Application(Frame):
 
 	def generate_points(self):
 		for i in xrange(self.point_count):
-			randx = random.randint(0, self.csize[0] / self.cscale)
-			randy = random.randint(0, self.csize[1] / self.cscale)
+			randx = random.randint(0, self.c_size[0] / self.c_scale)
+			randy = random.randint(0, self.c_size[1] / self.c_scale)
 			p = Point(randx, randy)
 			self.points.append(p)
 
@@ -116,9 +124,9 @@ class Application(Frame):
 			self.c.delete(l)
 
 	def add_line(self, line, cat='a'):
-		lines['a'].append(line)
+		self.lines['a'].append(line)
 		if cat != 'a':
-			lines[cat].append(line)
+			self.lines[cat].append(line)
 
 	def toggle_mode(self, mode):
 		print mode, ': ', self.toggles[mode]
@@ -128,13 +136,12 @@ class Application(Frame):
 			self.toggles[mode] = True
 
 	def toggle_convex_hull(self):
-		print(self.toggles['c'])
 		self.toggle_mode('c')
 		if self.toggles['c']:
 			self.clear_lines(cat='c')
 		else:
 			for l in convex_lines(self.points):
-				print '[ {0}, {1}, {2}, {3} ]'.format(a, b, x, y)
+				# print '[ {0}, {1}, {2}, {3} ]'.format(a, b, x, y)
 				a, b, x, y = l.get_raw()
 				a *= 9
 				b *= 9
@@ -173,37 +180,58 @@ class Application(Frame):
 	def __init__(self, master):
 		Frame.__init__(
 			self, master,
-			width=self.size[0],
-			height=self.size[1]
+			width=self.f_size[0],
+			height=self.f_size[1]
 		)
 		self.pack()
 		self.create_frames()
 		self.create_buttons(self.frames[1])
 
 
+def null():
+	return None
+
+
 def convex_lines(point_array):
 	points = point_array
 	lines = []
-	pts = [Point()]
+	pts = []
+	shit_point = Point(-1, -1)
+	pts.append(shit_point)
 	lowest = min(points, key=attrgetter('x'))		# Find the bottom-most point
 	pts.append(lowest)								# Add the lowest to the hull
-	points.pop(points.index(lowest))			# Remove first point from to-be-processed
-	while pts[0] is not pts[-1]:
-		angles = []
-		pts.pop(0)
-		for p in points:
-			angles.append(pts[0].angle_to(p))
-		print angles
-		i = angles.index(min(angles))
-		pts.append(points.pop(i))
-	for x in xrange(len(pts)):
-		if x != 0:
-			lines.append(Line(
+	count = 0
+	while not pts[0].same_as(pts[-1]):				# Loop until the last point on the hull is the same as the first
+		try:										# Attempt to
+			angle = 0
+			pts.append(points[0])
+			for x in xrange(len(points)):
+				if pts[-2].angle_to(points[x]) < angle:
+					pts.pop(-1)
+					pts.append(points[x])
+					if pts[0].same_as(points[x]):
+						print 'Same on both ends'
+					# time.sleep(0.1)
+					# print 'Adding Point: ', points[x], ' at index ', len(pts) - 1
+					# print len(pts)
+					print pts[0].x, ',', pts[0].y
+					print pts[-1].x, ',', pts[-1].y
+		except Exception, why:						# Catch exceptions
+			print(str(why))							# And print the cause
+		if count == 0:
+			pts.pop(0)
+		count += 1
+		if count > 99999:
+			break
+	for x in xrange(len(pts)):						# Cycle every point in the hull
+		if x != 0:									# If not the first in the list
+			lines.append(Line(						# Add a line between pts[x] and pts[x-1]
 				pts[x].x,
 				pts[x].y,
-				pts[x-1].x,
-				pts[x-1].y
+				pts[x - 1].x,
+				pts[x - 1].y
 			))
+	# print(pts.x)
 	return lines
 
 
@@ -211,6 +239,6 @@ window = Tk()
 app = Application(window)
 app.generate_points()
 app.draw_points()
-print convex_lines(app.points)
+print len(convex_lines(app.points))
 app.mainloop()
 window.destroy()
