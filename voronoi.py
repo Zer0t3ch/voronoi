@@ -2,19 +2,13 @@
 from operator import attrgetter
 from Tkinter import *
 import random
-import time
 import math
-import sys
-import os
 
 
 class Point:
 	def __init__(self, x=0, y=0):
-		self.loc = (x, y)
 		self.x = x
 		self.y = y
-	x = 0
-	y = 0
 
 	def angle_to(self, target):
 		if self.x == target.x:
@@ -46,13 +40,14 @@ class Line:
 		return self.p1.loc, self.p2.loc
 
 	def get_raw(self):
-		return self.p1.loc[0], self.p1.loc[1], self.p2.loc[0], self.p2.loc[1]
+		return self.p1.x, self.p1.y, self.p2.x, self.p2.y
 
 
 class Application(Frame):
 	f_size = [1200, 900]
 	c_size = [900, 900]
 	c_scale = 9
+	dot_scale = 3
 	frames = ['', '']
 	buttons = {}
 	point_count = 15
@@ -70,9 +65,8 @@ class Application(Frame):
 	}
 
 	def loc(self, p):
-		x, y = p.loc
-		a = x * self.c_scale
-		b = y * self.c_scale
+		a = p.x * self.c_scale
+		b = p.y * self.c_scale
 		return a, b
 
 	def create_frames(self):
@@ -104,13 +98,14 @@ class Application(Frame):
 	def draw_points(self):
 		for p in self.points:
 			a, b = self.loc(p)
+			s = self.dot_scale
 			self.c.create_line(
-				a - 1, b - 1,
-				a + 1, b + 1
+				a - s, b - s,
+				a + s, b + s
 			)
 			self.c.create_line(
-				a + 1, b - 1,
-				a - 1, b + 1
+				a + s, b - s,
+				a - s, b + s
 			)
 
 	def regenerate_points(self):
@@ -140,13 +135,13 @@ class Application(Frame):
 		if self.toggles['c']:
 			self.clear_lines(cat='c')
 		else:
-			for l in convex_lines(self.points):
+			for l in gift_wrapper(self.points):
 				# print '[ {0}, {1}, {2}, {3} ]'.format(a, b, x, y)
 				a, b, x, y = l.get_raw()
-				a *= 9
-				b *= 9
-				x *= 9
-				y *= 9
+				a *= self.c_scale
+				b *= self.c_scale
+				x *= self.c_scale
+				y *= self.c_scale
 				tline = self.c.create_line(a, b, x, y)
 				self.add_line(tline, cat='c')
 
@@ -192,6 +187,20 @@ def null():
 	return None
 
 
+def _orientation(a, b, c):
+	return ((b.x - a.x) * (c.y - b.y)) - ((b.y - a.y) * (c.x - b.x))
+
+
+def _rightmost(points):
+	p = Point(-1, -1)
+	x = -1
+	for pt in points:
+		if p.x > x:
+			p = pt
+			x = pt.x
+	return pt
+
+
 def convex_lines(point_array):
 	points = point_array
 	lines = []
@@ -235,10 +244,34 @@ def convex_lines(point_array):
 	return lines
 
 
+def gift_wrapper(point_array):
+	points = point_array
+	pts = []
+	lines = []
+	pts.append(_rightmost(point_array))
+	for c in pts:
+		angle = -1
+		for p in xrange(len(points)):
+			a = c.angle_to(points[p])
+			if a > angle:
+				angle = a
+				pts.remove(points[p-1])
+				pts.append(points[p])
+		if pts[0] is pts[-1]:
+			break
+	for c in xrange(len(pts)):
+		if c != 0:
+			lines.append(Line(
+				pts[c - 1].x, pts[c - 1].y,
+				pts[c].x, pts[c].y
+			))
+	return lines
+
+
 window = Tk()
 app = Application(window)
 app.generate_points()
 app.draw_points()
-print len(convex_lines(app.points))
+print len(gift_wrapper(app.points))
 app.mainloop()
 window.destroy()
