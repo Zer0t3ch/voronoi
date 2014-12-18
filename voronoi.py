@@ -4,7 +4,7 @@ from Tkinter import *
 import random
 import math
 
-POINT_COUNT = 150
+POINT_COUNT = 50
 
 class Point:
 	def __init__(self, x=0, y=0):
