@@ -46,7 +46,7 @@ class Line:
 class Application(Frame):
 	f_size = [1200, 900]
 	c_size = [900, 900]
-	c_scale = 9
+	c_scale = 1
 	dot_scale = 3
 	frames = ['', '']
 	buttons = {}
@@ -110,6 +110,10 @@ class Application(Frame):
 
 	def regenerate_points(self):
 		self.clear_points()
+		self.clear_lines()
+		self.toggles['c'] = False
+		self.toggles['d'] = False
+		self.toggles['v'] = False
 		self.c.delete(ALL)
 		self.generate_points()
 		self.draw_points()
@@ -124,26 +128,26 @@ class Application(Frame):
 			self.lines[cat].append(line)
 
 	def toggle_mode(self, mode):
-		print mode, ': ', self.toggles[mode]
+		# print mode, ': ', self.toggles[mode]
 		if self.toggles[mode]:
 			self.toggles[mode] = False
 		else:
 			self.toggles[mode] = True
 
 	def toggle_convex_hull(self):
-		self.toggle_mode('c')
 		if self.toggles['c']:
 			self.clear_lines(cat='c')
 		else:
-			for l in gift_wrapper(self.points):
+			for l in convex_lines(self.points):
 				# print '[ {0}, {1}, {2}, {3} ]'.format(a, b, x, y)
 				a, b, x, y = l.get_raw()
 				a *= self.c_scale
 				b *= self.c_scale
 				x *= self.c_scale
 				y *= self.c_scale
-				tline = self.c.create_line(a, b, x, y)
-				self.add_line(tline, cat='c')
+				temp_line = self.c.create_line(a, b, x, y)
+				self.add_line(temp_line, cat='c')
+		self.toggle_mode('c')
 
 	def create_buttons(self, parent):
 		quit = self.buttons['quit'] = Button(
@@ -191,80 +195,49 @@ def _orientation(a, b, c):
 	return ((b.x - a.x) * (c.y - b.y)) - ((b.y - a.y) * (c.x - b.x))
 
 
-def _rightmost(points):
-	p = Point(-1, -1)
-	x = -1
-	for pt in points:
-		if p.x > x:
-			p = pt
-			x = pt.x
-	return pt
-
-
-def convex_lines(point_array):
-	points = point_array
-	lines = []
-	pts = []
-	shit_point = Point(-1, -1)
-	pts.append(shit_point)
-	lowest = min(points, key=attrgetter('x'))		# Find the bottom-most point
-	pts.append(lowest)								# Add the lowest to the hull
-	count = 0
-	while not pts[0].same_as(pts[-1]):				# Loop until the last point on the hull is the same as the first
-		try:										# Attempt to
-			angle = 0
-			pts.append(points[0])
-			for x in xrange(len(points)):
-				if pts[-2].angle_to(points[x]) < angle:
-					pts.pop(-1)
-					pts.append(points[x])
-					if pts[0].same_as(points[x]):
-						print 'Same on both ends'
-					# time.sleep(0.1)
-					# print 'Adding Point: ', points[x], ' at index ', len(pts) - 1
-					# print len(pts)
-					print pts[0].x, ',', pts[0].y
-					print pts[-1].x, ',', pts[-1].y
-		except Exception, why:						# Catch exceptions
-			print(str(why))							# And print the cause
-		if count == 0:
-			pts.pop(0)
-		count += 1
-		if count > 99999:
-			break
-	for x in xrange(len(pts)):						# Cycle every point in the hull
-		if x != 0:									# If not the first in the list
-			lines.append(Line(						# Add a line between pts[x] and pts[x-1]
-				pts[x].x,
-				pts[x].y,
-				pts[x - 1].x,
-				pts[x - 1].y
-			))
-	# print(pts.x)
-	return lines
+def _rightmost(all_points):
+	x_list = []
+	for p in all_points:
+		x_list.append(p.x)
+	index = x_list.index(max(x_list))
+	return all_points[index]
 
 
 def gift_wrapper(point_array):
-	points = point_array
-	pts = []
-	lines = []
-	pts.append(_rightmost(point_array))
-	for c in pts:
-		angle = -1
-		for p in xrange(len(points)):
-			a = c.angle_to(points[p])
-			if a > angle:
-				angle = a
-				pts.remove(points[p-1])
-				pts.append(points[p])
-		if pts[0] is pts[-1]:
+	points = []
+	for p in point_array:
+		points.append(p)
+	# pnums = range(len(points))
+	hull = []
+	hull.append(_rightmost(point_array))
+	while True:
+		correct = 0
+		for i in range(1, len(points)):
+			if _orientation(hull[-1], points[correct], points[i]) < 0:
+				correct = i
+		if points[correct] is hull[0]:
 			break
-	for c in xrange(len(pts)):
-		if c != 0:
-			lines.append(Line(
-				pts[c - 1].x, pts[c - 1].y,
-				pts[c].x, pts[c].y
-			))
+		else:
+			hull.append(points[correct])
+			del points[correct]
+	# print len(hull), 'Hull points'
+	return hull
+
+
+def convex_lines(points):
+	lines = []
+	pts = gift_wrapper(points)
+	for i in range(1, len(pts)):
+		lines.append(Line(
+			pts[i - 1].x, pts[i - 1].y,
+			pts[i].x, pts[i].y
+		))
+	# right_most = _rightmost(app.points)
+	# lines.append(Line(
+	# 	right_most.x, right_most.y,
+	# 	450, 450
+	# ))
+	# print len(lines), 'lines'
 	return lines
 
 
@@ -272,6 +245,8 @@ window = Tk()
 app = Application(window)
 app.generate_points()
 app.draw_points()
-print len(gift_wrapper(app.points))
+wrapping = convex_lines(app.points)
+print wrapping
+print len(wrapping)
 app.mainloop()
 window.destroy()
