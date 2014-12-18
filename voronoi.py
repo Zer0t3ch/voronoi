@@ -207,7 +207,6 @@ def gift_wrapper(point_array):
 	points = []
 	for p in point_array:
 		points.append(p)
-	# pnums = range(len(points))
 	hull = []
 	hull.append(_rightmost(point_array))
 	while True:
@@ -220,7 +219,6 @@ def gift_wrapper(point_array):
 		else:
 			hull.append(points[correct])
 			del points[correct]
-	# print len(hull), 'Hull points'
 	return hull
 
 
@@ -235,12 +233,6 @@ def convex_lines(raw_points):
 			hull_points[i - 1].x, hull_points[i - 1].y,
 			hull_points[i].x, hull_points[i].y
 		))
-	# right_most = _rightmost(app.points)
-	# lines.append(Line(
-	# 	right_most.x, right_most.y,
-	# 	450, 450
-	# ))
-	# print len(lines), 'lines'
 	return lines
 
 
@@ -248,8 +240,5 @@ window = Tk()
 app = Application(window)
 app.generate_points()
 app.draw_points()
-wrapping = convex_lines(app.points)
-print wrapping
-print len(wrapping)
 app.mainloop()
 window.destroy()
