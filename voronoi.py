@@ -4,6 +4,7 @@ from Tkinter import *
 import random
 import math
 
+POINT_COUNT = 150
 
 class Point:
 	def __init__(self, x=0, y=0):
@@ -50,7 +51,6 @@ class Application(Frame):
 	dot_scale = 3
 	frames = ['', '']
 	buttons = {}
-	point_count = 15
 	points = []
 	lines = {
 		'a': [],
@@ -89,7 +89,7 @@ class Application(Frame):
 		self.points = []
 
 	def generate_points(self):
-		for i in xrange(self.point_count):
+		for i in xrange(POINT_COUNT):
 			randx = random.randint(0, self.c_size[0] / self.c_scale)
 			randy = random.randint(0, self.c_size[1] / self.c_scale)
 			p = Point(randx, randy)
@@ -224,13 +224,16 @@ def gift_wrapper(point_array):
 	return hull
 
 
-def convex_lines(points):
-	lines = []
-	pts = gift_wrapper(points)
-	for i in range(1, len(pts)):
+def convex_lines(raw_points):
+	hull_points = gift_wrapper(raw_points)
+	lines = [Line(
+		hull_points[0].x, hull_points[0].y,
+		hull_points[-1].x, hull_points[-1].y
+	)]
+	for i in range(1, len(hull_points)):
 		lines.append(Line(
-			pts[i - 1].x, pts[i - 1].y,
-			pts[i].x, pts[i].y
+			hull_points[i - 1].x, hull_points[i - 1].y,
+			hull_points[i].x, hull_points[i].y
 		))
 	# right_most = _rightmost(app.points)
 	# lines.append(Line(
