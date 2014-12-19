@@ -5,6 +5,7 @@ import math
 
 POINT_COUNT = 50
 
+
 class Point:
 	def __init__(self, x=0, y=0):
 		self.x = x
@@ -59,6 +60,7 @@ class Application(Frame):
 		'd': False,
 		'v': False
 	}
+	c = None
 
 	def loc(self, p):
 		a = p.x * self.c_scale
@@ -146,7 +148,7 @@ class Application(Frame):
 		self.toggle_mode('c')
 
 	def create_buttons(self, parent):
-		quit = self.buttons['quit'] = Button(
+		close = self.buttons['close'] = Button(
 			parent,
 			text='QUIT',
 			command=self.quit,
@@ -167,7 +169,7 @@ class Application(Frame):
 			text='Toggle Convex Hull',
 			command=self.toggle_convex_hull
 		)
-		quit.pack(fill='x', side='bottom')
+		close.pack(fill='x', side='bottom')
 		toggle_convex.pack(fill='x')
 		regen_points.pack(fill='x')
 		clear_lines.pack(fill='x')
@@ -203,8 +205,7 @@ def gift_wrapper(point_array):
 	points = []
 	for p in point_array:
 		points.append(p)
-	hull = []
-	hull.append(_rightmost(point_array))
+	hull = [_rightmost(point_array)]
 	while True:
 		correct = 0
 		for i in range(1, len(points)):
