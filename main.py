@@ -48,9 +48,9 @@ class Application(Frame):
 
 		frame_two.pack(side='right', fill='y')
 		frame_one.pack(side='left', fill='both')
-		self.canvas = Canvas(self.frames[0], width=900, height=900)
+		self.canvas = Canvas(self.frames[0])
 		self.canvas.bind('<Configure>', self.on_resize)
-		self.canvas.pack()
+		self.canvas.pack(fill='both')
 
 	def on_resize(self, event):
 		self.canvas_size = event.width, event.height
