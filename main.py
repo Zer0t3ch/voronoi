@@ -181,10 +181,6 @@ class Application(Frame):
 		self.create_buttons(self.frames[1])
 
 
-def null():
-	return None
-
-
 def _orientation(a, b, c):
 	return ((b.x - a.x) * (c.y - b.y)) - ((b.y - a.y) * (c.x - b.x))
 
