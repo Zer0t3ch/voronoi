@@ -43,8 +43,8 @@ class Line:
 
 class Application(Frame):
 	f_size = [1200, 900]
-	c_size = [900, 900]
-	c_scale = 1
+	canvas_size = [900, 900]
+	canvas_scale = 1
 	dot_scale = 3
 	frames = ['', '']
 	buttons = {}
@@ -60,11 +60,11 @@ class Application(Frame):
 		'd': False,
 		'v': False
 	}
-	c = None
+	canvas = None
 
 	def loc(self, p):
-		a = p.x * self.c_scale
-		b = p.y * self.c_scale
+		a = p.x * self.canvas_scale
+		b = p.y * self.canvas_scale
 		return a, b
 
 	def create_frames(self):
@@ -80,7 +80,7 @@ class Application(Frame):
 		)
 		self.frames[0].pack(side='left')
 		self.frames[1].pack(side='right', fill='y')
-		self.c = c = Canvas(self.frames[0], width=900, height=900)
+		self.canvas = c = Canvas(self.frames[0], width=900, height=900)
 		c.pack()
 
 	def clear_points(self):
@@ -88,8 +88,8 @@ class Application(Frame):
 
 	def generate_points(self):
 		for i in xrange(POINT_COUNT):
-			randx = random.randint(0, self.c_size[0] / self.c_scale)
-			randy = random.randint(0, self.c_size[1] / self.c_scale)
+			randx = random.randint(0, self.canvas_size[0] / self.canvas_scale)
+			randy = random.randint(0, self.canvas_size[1] / self.canvas_scale)
 			p = Point(randx, randy)
 			self.points.append(p)
 
@@ -97,11 +97,11 @@ class Application(Frame):
 		for p in self.points:
 			a, b = self.loc(p)
 			s = self.dot_scale
-			self.c.create_line(
+			self.canvas.create_line(
 				a - s, b - s,
 				a + s, b + s
 			)
-			self.c.create_line(
+			self.canvas.create_line(
 				a + s, b - s,
 				a - s, b + s
 			)
@@ -112,13 +112,13 @@ class Application(Frame):
 		self.toggles['c'] = False
 		self.toggles['d'] = False
 		self.toggles['v'] = False
-		self.c.delete(ALL)
+		self.canvas.delete(ALL)
 		self.generate_points()
 		self.draw_points()
 
 	def clear_lines(self, cat='a'):
 		for l in self.lines[cat]:
-			self.c.delete(l)
+			self.canvas.delete(l)
 
 	def add_line(self, line, cat='a'):
 		self.lines['a'].append(line)
@@ -139,11 +139,11 @@ class Application(Frame):
 			for l in convex_lines(self.points):
 				# print '[ {0}, {1}, {2}, {3} ]'.format(a, b, x, y)
 				a, b, x, y = l.get_raw()
-				a *= self.c_scale
-				b *= self.c_scale
-				x *= self.c_scale
-				y *= self.c_scale
-				temp_line = self.c.create_line(a, b, x, y)
+				a *= self.canvas_scale
+				b *= self.canvas_scale
+				x *= self.canvas_scale
+				y *= self.canvas_scale
+				temp_line = self.canvas.create_line(a, b, x, y)
 				self.add_line(temp_line, cat='c')
 		self.toggle_mode('c')
 
