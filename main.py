@@ -36,9 +36,6 @@ class Line:
 	def get_points(self):
 		return self.p1, self.p2
 
-	def get_locations(self):
-		return self.p1.loc, self.p2.loc
-
 	def get_raw(self):
 		return self.p1.x, self.p1.y, self.p2.x, self.p2.y
 
