@@ -55,7 +55,6 @@ class Application(Frame):
 	def on_resize(self, event):
 		self.canvas_size = event.width, event.height
 		self.regenerate_points()
-		print self.canvas_size
 
 	def clear_points(self):
 		self.points = []
