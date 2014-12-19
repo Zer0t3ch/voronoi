@@ -1,44 +1,10 @@
 #!/usr/bin/python
+from algorithms import *
 from Tkinter import *
+from geo import *
 import random
-import math
 
 POINT_COUNT = 50
-
-
-class Point:
-	def __init__(self, x=0, y=0):
-		self.x = x
-		self.y = y
-
-	def angle_to(self, target):
-		if self.x == target.x:
-			return 361
-		rad = math.atan(
-			(target.y - self.y) / (target.x - self.x)
-		)
-		deg = math.degrees(rad)
-		if deg < 0:
-			deg += 360
-		return deg
-
-	def same_as(self, target):
-		if self.x == target.x:
-			if self.y == target.y:
-				return True
-		return False
-
-
-class Line:
-	def __init__(self, x1, y1, x2, y2):
-		self.p1 = Point(x1, y1)
-		self.p2 = Point(x2, y2)
-
-	def get_points(self):
-		return self.p1, self.p2
-
-	def get_raw(self):
-		return self.p1.x, self.p1.y, self.p2.x, self.p2.y
 
 
 class Application(Frame):
@@ -96,7 +62,6 @@ class Application(Frame):
 	def draw_points(self):
 		for p in self.points:
 			a, b = self.loc(p)
-			s = self.dot_scale
 			self.canvas.create_rectangle(
 				a - self.dot_scale, b - self.dot_scale,
 				a + self.dot_scale, b + self.dot_scale
@@ -179,50 +144,6 @@ class Application(Frame):
 		self.pack()
 		self.create_frames()
 		self.create_buttons(self.frames[1])
-
-
-def _orientation(a, b, c):
-	return ((b.x - a.x) * (c.y - b.y)) - ((b.y - a.y) * (c.x - b.x))
-
-
-def _rightmost(all_points):
-	x_list = []
-	for p in all_points:
-		x_list.append(p.x)
-	index = x_list.index(max(x_list))
-	return all_points[index]
-
-
-def gift_wrapper(point_array):
-	points = []
-	for p in point_array:
-		points.append(p)
-	hull = [_rightmost(point_array)]
-	while True:
-		correct = 0
-		for i in range(1, len(points)):
-			if _orientation(hull[-1], points[correct], points[i]) < 0:
-				correct = i
-		if points[correct] is hull[0]:
-			break
-		else:
-			hull.append(points[correct])
-			del points[correct]
-	return hull
-
-
-def convex_lines(raw_points):
-	hull_points = gift_wrapper(raw_points)
-	lines = [Line(
-		hull_points[0].x, hull_points[0].y,
-		hull_points[-1].x, hull_points[-1].y
-	)]
-	for i in range(1, len(hull_points)):
-		lines.append(Line(
-			hull_points[i - 1].x, hull_points[i - 1].y,
-			hull_points[i].x, hull_points[i].y
-		))
-	return lines
 
 
 window = Tk()
