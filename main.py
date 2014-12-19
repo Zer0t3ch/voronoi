@@ -1,5 +1,4 @@
 #!/usr/bin/python
-from operator import attrgetter
 from Tkinter import *
 import random
 import math
