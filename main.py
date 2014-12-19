@@ -45,7 +45,7 @@ class Application(Frame):
 	f_size = [1200, 900]
 	canvas_size = [900, 900]
 	canvas_scale = 1
-	dot_scale = 3
+	dot_scale = 1
 	frames = ['', '']
 	buttons = {}
 	points = []
@@ -97,13 +97,9 @@ class Application(Frame):
 		for p in self.points:
 			a, b = self.loc(p)
 			s = self.dot_scale
-			self.canvas.create_line(
-				a - s, b - s,
-				a + s, b + s
-			)
-			self.canvas.create_line(
-				a + s, b - s,
-				a - s, b + s
+			self.canvas.create_rectangle(
+				a - self.dot_scale, b - self.dot_scale,
+				a + self.dot_scale, b + self.dot_scale
 			)
 
 	def regenerate_points(self):
