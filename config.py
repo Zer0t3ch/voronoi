@@ -1,3 +1,3 @@
-window_size = [1200, 600]
+window_size = [600, 300]
 
 point_count = 15
