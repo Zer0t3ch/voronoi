@@ -53,6 +53,7 @@ class Application(Frame):
 		self.canvas.pack(fill='both')
 
 	def on_resize(self, event):
+		# TODO: Fix upscaling
 		self.canvas_size = event.width, event.height
 		self.regenerate_points()
 
